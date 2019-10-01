@@ -25,6 +25,13 @@ var (
 )
 
 func main(){
+	var err error
+	gui, err = gocui.NewGui(gocui.OutputNormal)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer gui.Close()
+
 	gui.SetManagerFunc(layoutFunc)
 
 	if err := gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
@@ -49,12 +56,6 @@ func main(){
 }
 
 func init(){
-	g, err := gocui.NewGui(gocui.OutputNormal)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer g.Close()
-
 	game.currentPlayer = 0
 	for x := 0 ; x < 7 ; x++ {
 		game.gameData = append(game.gameData, []int{})
@@ -148,10 +149,8 @@ func printGame() {
 			switch game.gameData[x][y] {
 			case 0:
 				char = "X"
-				break
 			case 1:
 				char = "O"
-				break
 			}
 			row = row + " " + char
 		}
