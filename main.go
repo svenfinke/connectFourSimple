@@ -13,9 +13,9 @@ type GameData struct {
 }
 
 const (
-	VIEW_MENU = "menu"
-	VIEW_GAME_GRID = "gamegrid"
-	VIEW_MESSAGES = "messages"
+	ViewMenu     = "menu"
+	ViewGameGrid = "gamegrid"
+	ViewMessages = "messages"
 )
 
 var (
@@ -31,15 +31,15 @@ func main(){
 		log.Panicln(err)
 	}
 
-	if err := gui.SetKeybinding(VIEW_MENU, gocui.KeyArrowDown, gocui.ModNone, nextItem); err != nil {
+	if err := gui.SetKeybinding(ViewMenu, gocui.KeyArrowDown, gocui.ModNone, nextItem); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := gui.SetKeybinding(VIEW_MENU, gocui.KeyArrowUp, gocui.ModNone, prevItem); err != nil {
+	if err := gui.SetKeybinding(ViewMenu, gocui.KeyArrowUp, gocui.ModNone, prevItem); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := gui.SetKeybinding(VIEW_MENU, gocui.KeyEnter, gocui.ModNone, dropToken); err != nil {
+	if err := gui.SetKeybinding(ViewMenu, gocui.KeyEnter, gocui.ModNone, dropToken); err != nil {
 		log.Panicln(err)
 	}
 
@@ -70,7 +70,10 @@ func layoutFunc(g *gocui.Gui) error{
 	e, done = renderMessages()
 	e, done = renderGameGrid()
 
-	g.SetCurrentView(VIEW_MENU)
+	_, err := g.SetCurrentView(ViewMenu)
+	if err != nil {
+		log.Panic(err)
+	}
 	if done {
 		return e
 	}
@@ -80,9 +83,13 @@ func layoutFunc(g *gocui.Gui) error{
 
 func renderMessages() (error, bool) {
 	maxX, _ := gui.Size()
-	if v, err := gui.SetView(VIEW_MESSAGES, 7, 3, maxX-1, 12); err != nil {
+	if v, err := gui.SetView(ViewMessages, 7, 3, maxX-1, 12); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err, true
+		}
+
+		if v == nil {
+			return nil, false
 		}
 
 		v.Wrap = true
@@ -92,7 +99,7 @@ func renderMessages() (error, bool) {
 }
 
 func renderMenu() (error, bool) {
-	if _, err := gui.SetView(VIEW_MENU, 0, 3, 6, 12); err != nil {
+	if _, err := gui.SetView(ViewMenu, 0, 3, 6, 12); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err, true
 		}
@@ -108,14 +115,17 @@ func renderHeader() (error, bool) {
 		if err != gocui.ErrUnknownView {
 			return err, true
 		}
-		fmt.Fprintln(v, " connectFour")
+		_, err := fmt.Fprintln(v, " connectFour")
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 	return nil, false
 }
 
 func renderGameGrid() (error, bool) {
 	maxX, maxY := gui.Size()
-	if _, err := gui.SetView(VIEW_GAME_GRID, maxX/2-8, maxY/2-4, maxX/2+8, maxY/2+3); err != nil {
+	if _, err := gui.SetView(ViewGameGrid, maxX/2-8, maxY/2-4, maxX/2+8, maxY/2+3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err, true
 		}
@@ -126,7 +136,7 @@ func renderGameGrid() (error, bool) {
 }
 
 func printGame() {
-	v, err := gui.View(VIEW_GAME_GRID)
+	v, err := gui.View(ViewGameGrid)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -145,21 +155,30 @@ func printGame() {
 			}
 			row = row + " " + char
 		}
-		fmt.Fprintln(v, row)
+		_, err := fmt.Fprintln(v, row)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 }
 
 func printMenu() {
-	v, err := gui.View(VIEW_MENU)
+	v, err := gui.View(ViewMenu)
 	if err != nil {
 		log.Panic(err)
 	}
 	v.Clear()
 	for x := 0 ; x < 7 ; x++ {
 		if menuIndex == x {
-			fmt.Fprintln(v, " ", color.Red.Sprint(x))
+			_, err := fmt.Fprintln(v, " ", color.Red.Sprint(x))
+			if err != nil {
+				log.Panic(err)
+			}
 		} else {
-			fmt.Fprintln(v, " ", color.Yellow.Sprint(x))
+			_, err := fmt.Fprintln(v, " ", color.Yellow.Sprint(x))
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 	}
 
@@ -223,10 +242,13 @@ func gameFinished() bool {
 }
 
 func printMessage(msg string) {
-	v, err := gui.View(VIEW_MESSAGES)
+	v, err := gui.View(ViewMessages)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	fmt.Fprintln(v, msg)
+	_, err = fmt.Fprintln(v, msg)
+	if err != nil {
+		log.Panic(err)
+	}
 }
